@@ -9,6 +9,10 @@
     <!-- 跨平台 -->
     <RuntimeIdentifiers>win-x64;linux-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
     <Optimize>true</Optimize>
+    <!-- 单文件发布：包含原生库和内容文件，确保 Avalonia/SkiaSharp 能正常运行 -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
