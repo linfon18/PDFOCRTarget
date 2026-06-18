@@ -134,7 +134,7 @@
           <TextBlock Text="PDFOCRTarget" FontSize="12" Opacity="0.9"
                      VerticalAlignment="Center"
                      Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
-          <TextBlock x:Name="VersionTextBlock" Text="v1.0" FontSize="10" Opacity="0.5"
+          <TextBlock x:Name="VersionTextBlock" Text="v1.01" FontSize="10" Opacity="0.5"
                      VerticalAlignment="Bottom" Margin="0,0,0,2"
                      Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
         </StackPanel>

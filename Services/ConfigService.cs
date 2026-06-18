@@ -13,8 +13,8 @@ public static class ConfigService
 
     static ConfigService()
     {
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        ConfigDir = Path.Combine(appData, "PDFOCRTarget");
+        var tempDir = Path.GetTempPath();
+        ConfigDir = Path.Combine(tempDir, "MCZLFAPP", "PDFOCRTarget");
         ConfigFile = Path.Combine(ConfigDir, "config.json");
     }
 

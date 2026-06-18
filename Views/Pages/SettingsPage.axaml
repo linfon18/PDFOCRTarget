@@ -114,7 +114,7 @@
             <TextBlock Text="关于" FontSize="18" FontWeight="SemiBold"
                        Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
           </StackPanel>
-          <TextBlock Text="PDFOCRTarget v1.0" FontSize="13" Opacity="0.7"
+          <TextBlock Text="PDFOCRTarget v1.01" FontSize="13" Opacity="0.7"
                      Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
           <TextBlock Text="全平台 PDF 图片转文字 OCR 识别转换工具" FontSize="13" Opacity="0.7"
                      Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
