@@ -1,0 +1,127 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:PDFOCRTarget.ViewModels.Pages"
+             xmlns:models="using:PDFOCRTarget.Models"
+             xmlns:icons="using:Material.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="880" d:DesignHeight="640"
+             x:Class="PDFOCRTarget.Views.Pages.SearchPage"
+             x:DataType="vm:SearchPageViewModel">
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+    <!-- 标题 -->
+    <Border Grid.Row="0" Background="#20000000" Padding="24,16">
+      <StackPanel Spacing="4">
+        <TextBlock Text="关键词搜索" FontSize="24" FontWeight="Bold"
+                   Foreground="{DynamicResource MaterialOnBackgroundBrush}"/>
+        <TextBlock Text="在 PDF 或图片中搜索指定关键词，支持多关键词（逗号分隔）"
+                   FontSize="13" Opacity="0.7"
+                   Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+      </StackPanel>
+    </Border>
+
+    <!-- 搜索栏 -->
+    <Border Grid.Row="1" Background="#10000000" Padding="24,12">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto" RowDefinitions="*" >
+        <Button Grid.Column="0" Command="{Binding SelectFileCommand}" Height="36" Margin="0,0,8,0"
+                CornerRadius="18" Padding="12,0">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <icons:MaterialIcon Kind="FileDocument" Width="16" Height="16" VerticalAlignment="Center"/>
+            <TextBlock Text="选择文件" FontSize="13" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+
+        <TextBox Grid.Column="1" Text="{Binding SearchKeywords}" Watermark="输入关键词（逗号分隔，如：广东制造,广东电子信息）"
+                 Height="36" Margin="0,0,8,0" CornerRadius="18"
+                 Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+
+        <Button Grid.Column="2" Command="{Binding SearchCommand}" Height="36" Margin="0,0,8,0"
+                Classes="accent" CornerRadius="18" Padding="12,0"
+                IsVisible="{Binding !IsSearching}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <icons:MaterialIcon Kind="Magnify" Width="16" Height="16" VerticalAlignment="Center"/>
+            <TextBlock Text="搜索" FontSize="13" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+
+        <Button Grid.Column="2" Command="{Binding StopSearchCommand}" Height="36" Margin="0,0,8,0"
+                CornerRadius="18" Padding="12,0"
+                IsVisible="{Binding IsSearching}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <icons:MaterialIcon Kind="Stop" Width="16" Height="16" VerticalAlignment="Center"/>
+            <TextBlock Text="停止" FontSize="13" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+
+        <Button Grid.Column="3" Command="{Binding ExportResultsCommand}" Height="36"
+                CornerRadius="18" Padding="12,0">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <icons:MaterialIcon Kind="Export" Width="16" Height="16" VerticalAlignment="Center"/>
+            <TextBlock Text="导出" FontSize="13" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+      </Grid>
+    </Border>
+
+    <!-- 搜索结果列表 -->
+    <Border Grid.Row="2" Background="#08000000" Padding="24,12">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="搜索结果" FontSize="14" FontWeight="SemiBold"
+                   Margin="0,0,0,8" Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+
+        <ListBox ItemsSource="{Binding SearchResults}" Background="Transparent"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="models:SearchResultItem">
+              <Border Background="#10FFFFFF" CornerRadius="8" Padding="12,10" Margin="0,3"
+                      BorderBrush="#08FFFFFF" BorderThickness="1">
+                <StackPanel Spacing="4">
+                  <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Border Grid.Column="0" Background="{DynamicResource MaterialPrimaryContainerBrush}"
+                            CornerRadius="8" Padding="8,3" Margin="0,0,8,0">
+                      <TextBlock Text="{Binding Keyword}" FontSize="12" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource MaterialOnPrimaryContainerBrush}"/>
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="{Binding FileName}" FontSize="12" Opacity="0.6"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                      <icons:MaterialIcon Kind="FileDocumentOutline" Width="14" Height="14" Opacity="0.5"
+                                          Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+                      <TextBlock FontSize="12" Opacity="0.6"
+                                 Foreground="{DynamicResource MaterialOnSurfaceBrush}">
+                        <TextBlock.Text>
+                          <MultiBinding StringFormat="第 {0} 页">
+                            <Binding Path="PageNumber"/>
+                          </MultiBinding>
+                        </TextBlock.Text>
+                      </TextBlock>
+                    </StackPanel>
+                  </Grid>
+                  <TextBlock Text="{Binding Context}" FontSize="13" TextWrapping="Wrap"
+                             Opacity="0.85" LineHeight="20"
+                             Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+    </Border>
+
+    <!-- 底部状态栏 -->
+    <Border Grid.Row="3" Background="#20000000" Padding="24,10">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+          <TextBlock Text="{Binding StatusText}" FontSize="13" Opacity="0.8"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          <ProgressBar Value="{Binding ProgressValue}" Maximum="100" Width="200" Height="6"
+                       CornerRadius="3" IsVisible="{Binding IsSearching}"/>
+        </StackPanel>
+        <TextBlock Grid.Column="1" Text="{Binding FileName}" FontSize="12" Opacity="0.5"
+                   Foreground="{DynamicResource MaterialOnSurfaceBrush}" VerticalAlignment="Center"/>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

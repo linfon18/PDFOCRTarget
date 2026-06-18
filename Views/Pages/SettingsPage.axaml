@@ -1,0 +1,152 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:PDFOCRTarget.ViewModels.Pages"
+             xmlns:icons="using:Material.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="880" d:DesignHeight="640"
+             x:Class="PDFOCRTarget.Views.Pages.SettingsPage"
+             x:DataType="vm:SettingsPageViewModel">
+
+  <ScrollViewer>
+    <StackPanel Margin="28,24" Spacing="24">
+      <!-- 标题 -->
+      <StackPanel Spacing="4">
+        <TextBlock Text="设置" FontSize="28" FontWeight="Bold"
+                   Foreground="{DynamicResource MaterialOnBackgroundBrush}"/>
+        <TextBlock Text="自定义应用外观和 OCR 引擎配置" FontSize="14" Opacity="0.7"
+                   Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+      </StackPanel>
+
+      <!-- OCR 引擎状态 -->
+      <Border Background="#10FFFFFF" CornerRadius="16" Padding="20,16"
+              BorderBrush="#08FFFFFF" BorderThickness="1">
+        <StackPanel Spacing="12">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <icons:MaterialIcon Kind="CheckCircle" Width="22" Height="22"
+                                Foreground="{DynamicResource MaterialPrimaryBrush}"/>
+            <TextBlock Text="OCR 引擎" FontSize="18" FontWeight="SemiBold"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+            <Border Background="{DynamicResource MaterialPrimaryContainerBrush}"
+                    CornerRadius="10" Padding="10,3" Margin="8,0,0,0">
+              <TextBlock Text="{Binding OcrStatus}" FontSize="12"
+                         Foreground="{DynamicResource MaterialOnPrimaryContainerBrush}"/>
+            </Border>
+          </StackPanel>
+          <TextBlock Text="使用 Python RapidOCR 引擎，无需下载额外模型，支持中英文混合识别。"
+                     FontSize="13" Opacity="0.7"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+        </StackPanel>
+      </Border>
+
+      <!-- 背景图片设置 -->
+      <Border Background="#10FFFFFF" CornerRadius="16" Padding="20,16"
+              BorderBrush="#08FFFFFF" BorderThickness="1">
+        <StackPanel Spacing="16">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <icons:MaterialIcon Kind="ImageOutline" Width="22" Height="22"
+                                Foreground="{DynamicResource MaterialTertiaryBrush}"/>
+            <TextBlock Text="背景图片" FontSize="18" FontWeight="SemiBold"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </StackPanel>
+
+          <TextBlock Text="选择自定义照片作为背景，应用全局玻璃模糊效果" FontSize="13" Opacity="0.7"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button Command="{Binding SelectBackgroundCommand}" Height="36" CornerRadius="18" Padding="16,0">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <icons:MaterialIcon Kind="FolderOpen" Width="16" Height="16" VerticalAlignment="Center"/>
+                <TextBlock Text="选择图片" FontSize="13" VerticalAlignment="Center"/>
+              </StackPanel>
+            </Button>
+            <Button Command="{Binding ClearBackgroundCommand}" Height="36" CornerRadius="18" Padding="16,0">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <icons:MaterialIcon Kind="DeleteOutline" Width="16" Height="16" VerticalAlignment="Center"/>
+                <TextBlock Text="清除背景" FontSize="13" VerticalAlignment="Center"/>
+              </StackPanel>
+            </Button>
+          </StackPanel>
+
+          <TextBlock Text="{Binding PhotoPath}" FontSize="12" Opacity="0.5"
+                     TextTrimming="CharacterEllipsis"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+        </StackPanel>
+      </Border>
+
+      <!-- 遮罩透明度 -->
+      <Border Background="#10FFFFFF" CornerRadius="16" Padding="20,16"
+              BorderBrush="#08FFFFFF" BorderThickness="1">
+        <StackPanel Spacing="12">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <icons:MaterialIcon Kind="Opacity" Width="22" Height="22"
+                                Foreground="{DynamicResource MaterialSecondaryBrush}"/>
+            <TextBlock Text="玻璃模糊透明度" FontSize="18" FontWeight="SemiBold"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </StackPanel>
+
+          <TextBlock Text="调整背景遮罩层的透明度，数值越大背景越暗、模糊效果越强"
+                     FontSize="13" Opacity="0.7"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+
+          <Grid ColumnDefinitions="*,Auto" Margin="0,4">
+            <Slider Grid.Column="0" Value="{Binding OverlayOpacity}" Minimum="0.5" Maximum="0.95"
+                    TickFrequency="0.05" Width="300" HorizontalAlignment="Left"/>
+            <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}">
+              <TextBlock.Text>
+                <MultiBinding StringFormat="{}{0:P0}">
+                  <Binding Path="OverlayOpacity"/>
+                </MultiBinding>
+              </TextBlock.Text>
+            </TextBlock>
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <!-- 关于 -->
+      <Border Background="#10FFFFFF" CornerRadius="16" Padding="20,16"
+              BorderBrush="#08FFFFFF" BorderThickness="1">
+        <StackPanel Spacing="10">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <icons:MaterialIcon Kind="InformationOutline" Width="22" Height="22"
+                                Foreground="{DynamicResource MaterialOnSurfaceBrush}" Opacity="0.7"/>
+            <TextBlock Text="关于" FontSize="18" FontWeight="SemiBold"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </StackPanel>
+          <TextBlock Text="PDFOCRTarget v1.0" FontSize="13" Opacity="0.7"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          <TextBlock Text="全平台 PDF 图片转文字 OCR 识别转换工具" FontSize="13" Opacity="0.7"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          <TextBlock Text="UI 来自 MinecraftConnectTool 二次优化" FontSize="13" Opacity="0.7"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          <TextBlock Text="Github @linfon18" FontSize="13" Opacity="0.7"
+                     Foreground="{DynamicResource MaterialPrimaryBrush}"/>
+
+          <TextBlock Text="开源项目引用:" FontSize="13" FontWeight="SemiBold" Opacity="0.7" Margin="0,4,0,0"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          <StackPanel Spacing="4">
+            <TextBlock Text="- Avalonia UI (MIT License)" FontSize="12" Opacity="0.6"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+            <TextBlock Text="- Material.Avalonia (MIT License)" FontSize="12" Opacity="0.6"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+            <TextBlock Text="- CommunityToolkit.Mvvm (MIT License)" FontSize="12" Opacity="0.6"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+            <TextBlock Text="- PdfPig (Apache-2.0 License)" FontSize="12" Opacity="0.6"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+            <TextBlock Text="- RapidOCR (Apache-2.0 License)" FontSize="12" Opacity="0.6"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </StackPanel>
+
+          <Button Command="{Binding OpenGithubCommand}" Height="32" CornerRadius="16" Padding="16,0"
+                  HorizontalAlignment="Left" Margin="0,4,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <icons:MaterialIcon Kind="Github" Width="16" Height="16" VerticalAlignment="Center"/>
+              <TextBlock Text="GitHub 仓库" FontSize="13" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

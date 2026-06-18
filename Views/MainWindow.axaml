@@ -1,0 +1,290 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PDFOCRTarget.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:icons="using:Material.Icons.Avalonia"
+        mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="680"
+        x:Class="PDFOCRTarget.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="PDFOCRTarget — OCR 识别工具"
+        Width="960"
+        Height="680"
+        MinWidth="750"
+        MinHeight="550"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource MaterialPaperBrush}"
+        TransparencyLevelHint="None"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome">
+
+  <Window.Resources>
+    <ImageBrush x:Key="PhotoBackgroundBrush" Stretch="UniformToFill" Opacity="0.5"/>
+  </Window.Resources>
+
+  <Window.Styles>
+    <!-- 页面切换动画 -->
+    <Style Selector="TransitioningContentControl">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="CubicEaseOut"/>
+        </Transitions>
+      </Setter>
+    </Style>
+
+    <!-- 导航按钮 -->
+    <Style Selector="Button.navigation">
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Transitions">
+        <Transitions>
+          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut"/>
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Button.navigation:pointerover">
+      <Setter Property="RenderTransform" Value="scale(1.05)"/>
+    </Style>
+    <Style Selector="Button.navigation:pressed">
+      <Setter Property="RenderTransform" Value="scale(0.95)"/>
+    </Style>
+
+    <!-- 窗口控制按钮 -->
+    <Style Selector="Button.window-control">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Margin" Value="0"/>
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}" BorderThickness="0">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="Button.window-control:pointerover">
+      <Setter Property="Background" Value="{DynamicResource MaterialSurfaceVariantBrush}"/>
+    </Style>
+
+    <!-- 关闭按钮 -->
+    <Style Selector="Button.close-button">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Margin" Value="0"/>
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}" BorderThickness="0">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="Button.close-button:pointerover">
+      <Setter Property="Background" Value="#E81123"/>
+    </Style>
+  </Window.Styles>
+
+  <Grid>
+    <!-- 1. 背景图片层 -->
+    <Image x:Name="BackgroundImage"
+           Source="{x:Null}"
+           Stretch="UniformToFill"
+           Opacity="0.5"
+           ZIndex="0"/>
+
+    <!-- 2. 玻璃模糊遮罩层 -->
+    <Border x:Name="GlassOverlay"
+            Background="{DynamicResource GlassOverlayBrush}"
+            ZIndex="1"/>
+
+    <!-- 3. 噪点纹理层 (模拟毛玻璃质感) -->
+    <Border x:Name="NoiseLayer"
+            Background="#08FFFFFF"
+            ZIndex="2"/>
+
+    <!-- 4. 主内容 -->
+    <Grid ZIndex="10">
+      <!-- 自定义标题栏 -->
+      <Grid x:Name="TitleBar" Height="40" VerticalAlignment="Top" ZIndex="100">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 标题栏背景 -->
+        <Border Grid.ColumnSpan="3" Background="#40000000" PointerPressed="OnTitleBarPointerPressed"/>
+
+        <!-- 图标和标题 -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center"
+                    Margin="16,0,0,0" Spacing="8" PointerPressed="OnTitleBarPointerPressed">
+          <Border Background="{DynamicResource MaterialPrimaryBrush}" CornerRadius="6"
+                  Width="22" Height="22" VerticalAlignment="Center">
+            <TextBlock Text="OCR" FontSize="8" FontWeight="Bold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MaterialOnPrimaryBrush}"/>
+          </Border>
+          <TextBlock Text="PDFOCRTarget" FontSize="12" Opacity="0.9"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          <TextBlock x:Name="VersionTextBlock" Text="v1.0" FontSize="10" Opacity="0.5"
+                     VerticalAlignment="Bottom" Margin="0,0,0,2"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+        </StackPanel>
+
+        <!-- 窗口控制按钮 -->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top" Height="40">
+          <Button x:Name="MinimizeButton" Classes="window-control" Width="46" Height="40"
+                  Click="OnMinimizeButtonClick">
+            <icons:MaterialIcon Kind="WindowMinimize" Width="16" Height="16"
+                                Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </Button>
+          <Button x:Name="MaximizeButton" Classes="window-control" Width="46" Height="40"
+                  Click="OnMaximizeButtonClick">
+            <icons:MaterialIcon x:Name="MaximizeIcon" Kind="WindowMaximize" Width="16" Height="16"
+                                Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </Button>
+          <Button x:Name="CloseButton" Classes="close-button" Width="46" Height="40"
+                  Click="OnCloseButtonClick">
+            <icons:MaterialIcon Kind="WindowClose" Width="16" Height="16"
+                                Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </Button>
+        </StackPanel>
+      </Grid>
+
+      <!-- 主内容区域 -->
+      <Grid x:Name="MainContentGrid" Margin="0,40,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="80"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左侧导航栏 -->
+        <Border Grid.Column="0" Background="#30000000" BorderBrush="#15FFFFFF"
+                BorderThickness="0,0,1,0">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Logo -->
+            <Border Grid.Row="0" Padding="10,16">
+              <Border Background="{DynamicResource MaterialPrimaryBrush}"
+                      CornerRadius="14" Width="52" Height="52"
+                      HorizontalAlignment="Center">
+                <TextBlock Text="PDF" FontSize="13" FontWeight="Bold"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Foreground="{DynamicResource MaterialOnPrimaryBrush}"/>
+              </Border>
+            </Border>
+
+            <!-- 导航按钮 -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+              <StackPanel Spacing="4" Margin="8,8">
+                <!-- 首页 -->
+                <Button x:Name="HomeButton" Tag="Home" Click="OnNavigationButtonClick"
+                        Classes="navigation" Width="64" Height="60" CornerRadius="16"
+                        HorizontalAlignment="Center">
+                  <StackPanel Spacing="2" HorizontalAlignment="Center">
+                    <Border x:Name="HomeIndicator" Background="{DynamicResource MaterialSecondaryContainerBrush}"
+                            CornerRadius="14" Width="48" Height="30" HorizontalAlignment="Center">
+                      <icons:MaterialIcon x:Name="HomeIcon" Kind="Home" Width="20" Height="20"
+                                          Foreground="{DynamicResource MaterialOnSecondaryContainerBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock x:Name="HomeText" Text="首页" FontSize="11" FontWeight="Medium"
+                               Foreground="{DynamicResource MaterialOnSurfaceBrush}" HorizontalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+
+                <!-- OCR识别 -->
+                <Button x:Name="OcrButton" Tag="Ocr" Click="OnNavigationButtonClick"
+                        Classes="navigation" Width="64" Height="60" CornerRadius="16"
+                        HorizontalAlignment="Center">
+                  <StackPanel Spacing="2" HorizontalAlignment="Center">
+                    <Border x:Name="OcrIndicator" Background="Transparent"
+                            CornerRadius="14" Width="48" Height="30" HorizontalAlignment="Center">
+                      <icons:MaterialIcon x:Name="OcrIcon" Kind="FileDocument" Width="20" Height="20"
+                                          Foreground="{DynamicResource MaterialOnSurfaceBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.7"/>
+                    </Border>
+                    <TextBlock x:Name="OcrText" Text="OCR" FontSize="11"
+                               Foreground="{DynamicResource MaterialOnSurfaceBrush}" Opacity="0.7"
+                               HorizontalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+
+                <!-- PDF转换 -->
+                <Button x:Name="PdfConvertButton" Tag="PdfConvert" Click="OnNavigationButtonClick"
+                        Classes="navigation" Width="64" Height="60" CornerRadius="16"
+                        HorizontalAlignment="Center">
+                  <StackPanel Spacing="2" HorizontalAlignment="Center">
+                    <Border x:Name="PdfConvertIndicator" Background="Transparent"
+                            CornerRadius="14" Width="48" Height="30" HorizontalAlignment="Center">
+                      <icons:MaterialIcon x:Name="PdfConvertIcon" Kind="FileReplace" Width="20" Height="20"
+                                          Foreground="{DynamicResource MaterialOnSurfaceBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.7"/>
+                    </Border>
+                    <TextBlock x:Name="PdfConvertText" Text="PDF" FontSize="11"
+                               Foreground="{DynamicResource MaterialOnSurfaceBrush}" Opacity="0.7"
+                               HorizontalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+
+                <!-- 关键词搜索 -->
+                <Button x:Name="SearchButton" Tag="Search" Click="OnNavigationButtonClick"
+                        Classes="navigation" Width="64" Height="60" CornerRadius="16"
+                        HorizontalAlignment="Center">
+                  <StackPanel Spacing="2" HorizontalAlignment="Center">
+                    <Border x:Name="SearchIndicator" Background="Transparent"
+                            CornerRadius="14" Width="48" Height="30" HorizontalAlignment="Center">
+                      <icons:MaterialIcon x:Name="SearchIcon" Kind="Magnify" Width="20" Height="20"
+                                          Foreground="{DynamicResource MaterialOnSurfaceBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.7"/>
+                    </Border>
+                    <TextBlock x:Name="SearchText" Text="搜索" FontSize="11"
+                               Foreground="{DynamicResource MaterialOnSurfaceBrush}" Opacity="0.7"
+                               HorizontalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+            </ScrollViewer>
+
+            <!-- 设置按钮 (底部) -->
+            <StackPanel Grid.Row="2" Spacing="4" Margin="8,8" VerticalAlignment="Bottom">
+              <Button x:Name="SettingsButton" Tag="Settings" Click="OnNavigationButtonClick"
+                      Classes="navigation" Width="64" Height="60" CornerRadius="16"
+                      HorizontalAlignment="Center" Margin="0,0,0,12">
+                <StackPanel Spacing="2" HorizontalAlignment="Center">
+                  <Border x:Name="SettingsIndicator" Background="Transparent"
+                          CornerRadius="14" Width="48" Height="30" HorizontalAlignment="Center">
+                    <icons:MaterialIcon x:Name="SettingsIcon" Kind="CogOutline" Width="20" Height="20"
+                                        Foreground="{DynamicResource MaterialOnSurfaceBrush}"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.7"/>
+                  </Border>
+                  <TextBlock x:Name="SettingsText" Text="设置" FontSize="11"
+                             Foreground="{DynamicResource MaterialOnSurfaceBrush}" Opacity="0.7"
+                             HorizontalAlignment="Center"/>
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- 页面内容 -->
+        <TransitioningContentControl Grid.Column="1"
+                                     Content="{Binding CurrentPage}"
+                                     Margin="0"/>
+      </Grid>
+    </Grid>
+  </Grid>
+</Window>

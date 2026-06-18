@@ -1,0 +1,110 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:PDFOCRTarget.ViewModels.Pages"
+             xmlns:icons="using:Material.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="880" d:DesignHeight="640"
+             x:Class="PDFOCRTarget.Views.Pages.HomePage"
+             x:DataType="vm:HomePageViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="Border.card">
+      <Setter Property="BoxShadow" Value="0 2 8 0 #1A000000"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource MaterialDividerBrush}"/>
+    </Style>
+    <Style Selector="Border.card:pointerover">
+      <Setter Property="BoxShadow" Value="0 4 16 0 #26000000"/>
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer>
+    <StackPanel Margin="28,24" Spacing="20">
+      <!-- 标题区域 -->
+      <StackPanel Spacing="4">
+        <TextBlock Text="PDFOCRTarget"
+                   FontSize="32" FontWeight="Bold"
+                   Foreground="{DynamicResource MaterialOnBackgroundBrush}"/>
+        <TextBlock Text="全平台 PDF 图片转文字 OCR 识别转换工具"
+                   FontSize="16" Opacity="0.7"
+                   Foreground="{DynamicResource MaterialOnBackgroundBrush}"/>
+      </StackPanel>
+
+      <!-- 状态卡片 -->
+      <Border Background="{DynamicResource MaterialSurfaceBrush}"
+              BorderBrush="{DynamicResource MaterialPrimaryBrush}"
+              BorderThickness="1" CornerRadius="12" Padding="16,12">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <icons:MaterialIcon Grid.Column="0" Kind="InformationCircle"
+                              Width="20" Height="20" Margin="0,0,10,0"
+                              Foreground="{DynamicResource MaterialPrimaryBrush}"
+                              VerticalAlignment="Center"/>
+          <StackPanel Grid.Column="1" Spacing="2">
+            <TextBlock Text="环境状态" FontSize="14" FontWeight="SemiBold"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+            <TextBlock Text="拖拽文件到 OCR 识别页面开始工作" FontSize="13" Opacity="0.7"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- 功能卡片 -->
+      <UniformGrid Columns="3" Margin="0,8">
+        <!-- OCR 识别卡片 -->
+        <Border Classes="card" Background="{DynamicResource MaterialSurfaceBrush}"
+                CornerRadius="16" Margin="6" Padding="16">
+          <StackPanel Spacing="8">
+            <Border Background="{DynamicResource MaterialPrimaryContainerBrush}"
+                    CornerRadius="12" Width="48" Height="48" HorizontalAlignment="Left">
+              <icons:MaterialIcon Kind="FileDocument" Width="24" Height="24"
+                                  Foreground="{DynamicResource MaterialOnPrimaryContainerBrush}"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="OCR 识别" FontSize="18" FontWeight="SemiBold"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+            <TextBlock Text="将扫描版 PDF 和图片中的文字识别为可编辑文本"
+                       FontSize="13" Opacity="0.7" TextWrapping="Wrap"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </StackPanel>
+        </Border>
+
+        <!-- 关键词搜索卡片 -->
+        <Border Classes="card" Background="{DynamicResource MaterialSurfaceBrush}"
+                CornerRadius="16" Margin="6" Padding="16">
+          <StackPanel Spacing="8">
+            <Border Background="{DynamicResource MaterialSecondaryContainerBrush}"
+                    CornerRadius="12" Width="48" Height="48" HorizontalAlignment="Left">
+              <icons:MaterialIcon Kind="Magnify" Width="24" Height="24"
+                                  Foreground="{DynamicResource MaterialOnSecondaryContainerBrush}"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="关键词搜索" FontSize="18" FontWeight="SemiBold"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+            <TextBlock Text="在 PDF 文档中搜索关键词并定位到具体页面"
+                       FontSize="13" Opacity="0.7" TextWrapping="Wrap"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </StackPanel>
+        </Border>
+
+        <!-- 自定义背景卡片 -->
+        <Border Classes="card" Background="{DynamicResource MaterialSurfaceBrush}"
+                CornerRadius="16" Margin="6" Padding="16">
+          <StackPanel Spacing="8">
+            <Border Background="{DynamicResource MaterialTertiaryContainerBrush}"
+                    CornerRadius="12" Width="48" Height="48" HorizontalAlignment="Left">
+              <icons:MaterialIcon Kind="ImageFilterTiltShift" Width="24" Height="24"
+                                  Foreground="{DynamicResource MaterialOnTertiaryContainerBrush}"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="玻璃模糊主题" FontSize="18" FontWeight="SemiBold"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+            <TextBlock Text="自定义照片背景并应用全局玻璃模糊效果"
+                       FontSize="13" Opacity="0.7" TextWrapping="Wrap"
+                       Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </StackPanel>
+        </Border>
+      </UniformGrid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

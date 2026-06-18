@@ -1,0 +1,63 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:PDFOCRTarget"
+             xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
+             xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="PDFOCRTarget.App"
+             RequestedThemeVariant="Dark">
+
+  <Application.DataTemplates>
+    <local:ViewLocator/>
+  </Application.DataTemplates>
+
+  <Application.Styles>
+    <FluentTheme />
+    <themes:MaterialTheme BaseTheme="Dark" PrimaryColor="Purple" SecondaryColor="Teal" />
+    <icons:MaterialIconStyles />
+  </Application.Styles>
+
+  <Application.Resources>
+    <!-- Material Design 3 颜色资源 -->
+    <SolidColorBrush x:Key="MaterialPrimaryBrush" Color="#D0BCFF"/>
+    <SolidColorBrush x:Key="MaterialOnPrimaryBrush" Color="#381E72"/>
+    <SolidColorBrush x:Key="MaterialPrimaryContainerBrush" Color="#4F378B"/>
+    <SolidColorBrush x:Key="MaterialOnPrimaryContainerBrush" Color="#EADDFF"/>
+
+    <SolidColorBrush x:Key="MaterialSecondaryBrush" Color="#CCC2DC"/>
+    <SolidColorBrush x:Key="MaterialOnSecondaryBrush" Color="#332D41"/>
+    <SolidColorBrush x:Key="MaterialSecondaryContainerBrush" Color="#4A4458"/>
+    <SolidColorBrush x:Key="MaterialOnSecondaryContainerBrush" Color="#E8DEF8"/>
+
+    <SolidColorBrush x:Key="MaterialTertiaryBrush" Color="#EFB8C8"/>
+    <SolidColorBrush x:Key="MaterialOnTertiaryBrush" Color="#492532"/>
+    <SolidColorBrush x:Key="MaterialTertiaryContainerBrush" Color="#633B48"/>
+    <SolidColorBrush x:Key="MaterialOnTertiaryContainerBrush" Color="#FFD8E4"/>
+
+    <SolidColorBrush x:Key="MaterialSurfaceBrush" Color="#1C1B1F"/>
+    <SolidColorBrush x:Key="MaterialOnSurfaceBrush" Color="#E6E1E5"/>
+    <SolidColorBrush x:Key="MaterialOnSurfaceVariantBrush" Color="#49454F"/>
+    <SolidColorBrush x:Key="MaterialSurfaceVariantBrush" Color="#49454F"/>
+
+    <SolidColorBrush x:Key="MaterialBackgroundBrush" Color="#1C1B1F"/>
+    <SolidColorBrush x:Key="MaterialOnBackgroundBrush" Color="#E6E1E5"/>
+
+    <SolidColorBrush x:Key="MaterialErrorBrush" Color="#F2B8B5"/>
+    <SolidColorBrush x:Key="MaterialOnErrorBrush" Color="#601410"/>
+    <SolidColorBrush x:Key="MaterialErrorContainerBrush" Color="#8C1D18"/>
+    <SolidColorBrush x:Key="MaterialOnErrorContainerBrush" Color="#F9DEDC"/>
+
+    <SolidColorBrush x:Key="MaterialOutlineBrush" Color="#938F99"/>
+    <SolidColorBrush x:Key="MaterialOutlineVariantBrush" Color="#49454F"/>
+    <SolidColorBrush x:Key="MaterialDividerBrush" Color="#49454F"/>
+
+    <SolidColorBrush x:Key="MaterialPaperBrush" Color="#141218"/>
+
+    <SolidColorBrush x:Key="MaterialInverseSurfaceBrush" Color="#E6E1E5"/>
+    <SolidColorBrush x:Key="MaterialInverseOnSurfaceBrush" Color="#1C1B1F"/>
+
+    <!-- 玻璃模糊背景色 -->
+    <SolidColorBrush x:Key="GlassBackgroundBrush" Color="#141218" Opacity="0.65"/>
+    <SolidColorBrush x:Key="GlassBorderBrush" Color="#FFFFFF" Opacity="0.08"/>
+    <SolidColorBrush x:Key="GlassOverlayBrush" Color="#1C1B1F" Opacity="0.85"/>
+  </Application.Resources>
+</Application>

@@ -1,0 +1,198 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:PDFOCRTarget.ViewModels.Pages"
+             xmlns:icons="using:Material.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="880" d:DesignHeight="640"
+             x:Class="PDFOCRTarget.Views.Pages.PdfConvertPage"
+             x:DataType="vm:PdfConvertPageViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="Button.icon-btn">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="6"/>
+      <Setter Property="MinWidth" Value="32"/>
+      <Setter Property="MinHeight" Value="32"/>
+      <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    <Style Selector="Button.icon-btn:pointerover">
+      <Setter Property="Background" Value="#15FFFFFF"/>
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+    <!-- 标题 -->
+    <Border Grid.Row="0" Background="#20000000" Padding="24,16">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Spacing="4">
+          <TextBlock Text="PDF 照片转 PDF 文本" FontSize="24" FontWeight="Bold"
+                     Foreground="{DynamicResource MaterialOnBackgroundBrush}"/>
+          <TextBlock Text="将扫描版 PDF（图片型）转换为可搜索的文字版 PDF / 文本文件"
+                     FontSize="13" Opacity="0.7"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Classes="icon-btn" Command="{Binding CopyTextCommand}" ToolTip.Tip="复制当前页文本">
+            <icons:MaterialIcon Kind="ContentCopy" Width="20" Height="20"
+                                Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </Button>
+          <Button Classes="icon-btn" Command="{Binding ExportTextCommand}" ToolTip.Tip="导出为TXT">
+            <icons:MaterialIcon Kind="Export" Width="20" Height="20"
+                                Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </Button>
+          <Button Classes="icon-btn" Command="{Binding ExportSearchablePdfCommand}" ToolTip.Tip="导出可搜索PDF">
+            <icons:MaterialIcon Kind="FilePdfBox" Width="20" Height="20"
+                                Foreground="{DynamicResource MaterialPrimaryBrush}"/>
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- 文件选择 + 工具栏 -->
+    <Border Grid.Row="1" Background="#10000000" Padding="24,12">
+      <StackPanel Spacing="10">
+        <!-- 文件选择行 -->
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Button Grid.Column="0" Command="{Binding SelectInputFileCommand}" Height="36" Margin="0,0,12,0"
+                  CornerRadius="18" Padding="16,0">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <icons:MaterialIcon Kind="FileDocument" Width="16" Height="16" VerticalAlignment="Center"/>
+              <TextBlock Text="选择 PDF" FontSize="13" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+          <Border Grid.Column="1" Background="#10FFFFFF" CornerRadius="8" Padding="12,6"
+                  BorderBrush="#08FFFFFF" BorderThickness="1" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+              <icons:MaterialIcon Kind="FileDocumentOutline" Width="16" Height="16" Opacity="0.5"
+                                  Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+              <TextBlock Text="{Binding InputFileName}" FontSize="13"
+                         Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+              <TextBlock FontSize="12" Opacity="0.5" IsVisible="{Binding TotalPages}"
+                         Foreground="{DynamicResource MaterialOnSurfaceBrush}">
+                <TextBlock.Text>
+                  <MultiBinding StringFormat="({0} 页)">
+                    <Binding Path="TotalPages"/>
+                  </MultiBinding>
+                </TextBlock.Text>
+              </TextBlock>
+            </StackPanel>
+          </Border>
+        </Grid>
+
+        <!-- 操作行 -->
+        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+          <TextBlock Text="渲染 DPI:" FontSize="13" Opacity="0.7"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}" VerticalAlignment="Center"/>
+          <ComboBox ItemsSource="{Binding DpiOptions}"
+                    SelectedItem="{Binding SelectedDpi}"
+                    MinWidth="80" MaxDropDownHeight="150"/>
+          <Border Width="1" Height="20" Background="#15FFFFFF"/>
+          <Button Command="{Binding StartConvertCommand}" IsVisible="{Binding !IsProcessing}" Height="32"
+                  Classes="accent" CornerRadius="16" Padding="16,0">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <icons:MaterialIcon Kind="Play" Width="16" Height="16" VerticalAlignment="Center"/>
+              <TextBlock Text="开始转换" FontSize="13" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+          <Button Command="{Binding StopConvertCommand}" IsVisible="{Binding IsProcessing}" Height="32"
+                  CornerRadius="16" Padding="16,0">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <icons:MaterialIcon Kind="Stop" Width="16" Height="16" VerticalAlignment="Center"/>
+              <TextBlock Text="停止" FontSize="13" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- 主内容区：左侧 PDF 预览 + 右侧 OCR 文本 -->
+    <Grid Grid.Row="2" ColumnDefinitions="*,*">
+      <!-- 左侧：PDF 页面图片预览 -->
+      <Border Grid.Column="0" Background="#08000000" Padding="8">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="PDF 页面预览" FontSize="14" FontWeight="SemiBold"
+                     Margin="4,0,0,6" Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          <Border Background="#10FFFFFF" CornerRadius="8" BorderBrush="#08FFFFFF" BorderThickness="1">
+            <ScrollViewer>
+              <Image Source="{Binding CurrentPreviewImage}"
+                     Stretch="Uniform"
+                     HorizontalAlignment="Center"
+                     Margin="4"/>
+            </ScrollViewer>
+          </Border>
+        </DockPanel>
+      </Border>
+
+      <!-- 右侧：OCR 文本 -->
+      <Border Grid.Column="1" Background="#08000000" Padding="8">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="识别结果" FontSize="14" FontWeight="SemiBold"
+                     Margin="4,0,0,6" Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          <TextBox Text="{Binding CurrentOcrText}"
+                   IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                   Background="#10FFFFFF" FontSize="13"
+                   Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+        </DockPanel>
+      </Border>
+    </Grid>
+
+    <!-- 底部：翻页 + 状态栏 -->
+    <Border Grid.Row="3" Background="#20000000" Padding="24,8">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <!-- 翻页按钮 -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+          <Button Classes="icon-btn" Command="{Binding GoToFirstPageCommand}" ToolTip.Tip="第一页">
+            <icons:MaterialIcon Kind="PageFirst" Width="18" Height="18"
+                                Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </Button>
+          <Button Classes="icon-btn" Command="{Binding GoToPreviousPageCommand}" ToolTip.Tip="上一页">
+            <icons:MaterialIcon Kind="ChevronLeft" Width="18" Height="18"
+                                Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </Button>
+          <TextBlock Text="{Binding PageNavigatorText}" FontSize="13" Margin="8,0"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}" VerticalAlignment="Center"/>
+          <Button Classes="icon-btn" Command="{Binding GoToNextPageCommand}" ToolTip.Tip="下一页">
+            <icons:MaterialIcon Kind="ChevronRight" Width="18" Height="18"
+                                Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </Button>
+          <Button Classes="icon-btn" Command="{Binding GoToLastPageCommand}" ToolTip.Tip="最后一页">
+            <icons:MaterialIcon Kind="PageLast" Width="18" Height="18"
+                                Foreground="{DynamicResource MaterialOnSurfaceBrush}"/>
+          </Button>
+        </StackPanel>
+
+        <!-- 进度 -->
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+          <TextBlock Text="{Binding StatusText}" FontSize="13" Opacity="0.8"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}" VerticalAlignment="Center"/>
+          <ProgressBar Value="{Binding ProgressValue}" Maximum="100" Width="160" Height="6"
+                       CornerRadius="3" IsVisible="{Binding IsProcessing}"/>
+          <TextBlock Text="{Binding ProgressText}" FontSize="12" Opacity="0.6"
+                     IsVisible="{Binding IsProcessing}"
+                     Foreground="{DynamicResource MaterialOnSurfaceBrush}" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- 导出按钮 -->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Command="{Binding ExportTextCommand}" Height="28" CornerRadius="14" Padding="12,0"
+                  IsVisible="{Binding HasResults}">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <icons:MaterialIcon Kind="Export" Width="14" Height="14" VerticalAlignment="Center"/>
+              <TextBlock Text="导出TXT" FontSize="12" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+          <Button Command="{Binding ExportSearchablePdfCommand}" Height="28" CornerRadius="14" Padding="12,0"
+                  IsVisible="{Binding HasResults}">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <icons:MaterialIcon Kind="FilePdfBox" Width="14" Height="14" VerticalAlignment="Center"/>
+              <TextBlock Text="导出PDF" FontSize="12" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>
