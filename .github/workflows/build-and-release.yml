@@ -17,28 +17,34 @@ jobs:
           - os: windows-latest
             rid: win-x64
             self_contained: true
-            asset_name: PDFOCRTarget-win-x64-Self-Contain.exe
+            artifact_name: PDFOCRTarget-win-x64-Self-Contain
+            zip_name: PDFOCRTarget-win-x64-Self-Contain.zip
           - os: ubuntu-latest
             rid: linux-x64
             self_contained: true
-            asset_name: PDFOCRTarget-linux-x64-Self-Contain
+            artifact_name: PDFOCRTarget-linux-x64-Self-Contain
+            zip_name: PDFOCRTarget-linux-x64-Self-Contain.zip
           - os: macos-latest
             rid: osx-arm64
             self_contained: true
-            asset_name: PDFOCRTarget-osx-arm64-Self-Contain
+            artifact_name: PDFOCRTarget-osx-arm64-Self-Contain
+            zip_name: PDFOCRTarget-osx-arm64-Self-Contain.zip
           # 依赖框架版本（需要安装 .NET 9 运行时，体积更小）
           - os: windows-latest
             rid: win-x64
             self_contained: false
-            asset_name: PDFOCRTarget-win-x64.exe
+            artifact_name: PDFOCRTarget-win-x64
+            zip_name: PDFOCRTarget-win-x64.zip
           - os: ubuntu-latest
             rid: linux-x64
             self_contained: false
-            asset_name: PDFOCRTarget-linux-x64
+            artifact_name: PDFOCRTarget-linux-x64
+            zip_name: PDFOCRTarget-linux-x64.zip
           - os: macos-latest
             rid: osx-arm64
             self_contained: false
-            asset_name: PDFOCRTarget-osx-arm64
+            artifact_name: PDFOCRTarget-osx-arm64
+            zip_name: PDFOCRTarget-osx-arm64.zip
 
     steps:
       - name: Checkout
@@ -50,41 +56,40 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Publish
-        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained ${{ matrix.self_contained }} -p:PublishSingleFile=true -o ./publish-${{ matrix.asset_name }}
+        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained ${{ matrix.self_contained }} -o ./publish
 
-      - name: Find and rename binary
-        shell: bash
-        run: |
-          if [ "${{ matrix.rid }}" = "win-x64" ]; then
-            if [ -f "publish-${{ matrix.asset_name }}/PDFOCRTarget.exe" ]; then
-              cp "publish-${{ matrix.asset_name }}/PDFOCRTarget.exe" "${{ matrix.asset_name }}"
-            else
-              echo "ERROR: PDFOCRTarget.exe not found"
-              ls -la "publish-${{ matrix.asset_name }}/"
-              exit 1
-            fi
-          else
-            if [ -f "publish-${{ matrix.asset_name }}/PDFOCRTarget" ]; then
-              cp "publish-${{ matrix.asset_name }}/PDFOCRTarget" "${{ matrix.asset_name }}"
-              chmod +x "${{ matrix.asset_name }}"
-            else
-              echo "ERROR: PDFOCRTarget binary not found"
-              ls -la "publish-${{ matrix.asset_name }}/"
-              exit 1
-            fi
-          fi
+      - name: Make Linux/macOS binary executable
+        if: matrix.rid != 'win-x64'
+        run: chmod +x publish/PDFOCRTarget
 
       - name: Check file size
         shell: bash
         run: |
-          echo "=== Artifact size ==="
-          ls -lh "${{ matrix.asset_name }}"
+          echo "=== Publish directory ==="
+          ls -lh publish/
+          echo "=== Main binary ==="
+          if [ -f "publish/PDFOCRTarget.exe" ]; then
+            ls -lh publish/PDFOCRTarget.exe
+          else
+            ls -lh publish/PDFOCRTarget
+          fi
+
+      - name: Package (Windows)
+        if: matrix.rid == 'win-x64'
+        shell: powershell
+        run: |
+          Compress-Archive -Path publish/* -DestinationPath "${{ matrix.zip_name }}"
+
+      - name: Package (Linux/macOS)
+        if: matrix.rid != 'win-x64'
+        run: |
+          cd publish && zip -r ../${{ matrix.zip_name }} . && cd ..
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.asset_name }}
-          path: ${{ matrix.asset_name }}
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.zip_name }}
 
   release:
     needs: build
@@ -128,21 +133,24 @@ jobs:
             ```
 
             ### 版本说明
-            - **Self-Contain** — 独立版本，无需安装 .NET 运行时，体积较大（~80MB）
-            - **无后缀** — 依赖框架版本，需先安装 [.NET 9 运行时](https://dotnet.microsoft.com/download/dotnet/9.0)，体积较小（~1MB）
+            - **Self-Contain** — 独立版本，无需安装 .NET 运行时，解压后直接运行，体积较大
+            - **无后缀** — 依赖框架版本，需先安装 [.NET 9 运行时](https://dotnet.microsoft.com/download/dotnet/9.0)，体积较小
+
+            ### 使用方式
+            下载 zip 压缩包 → 解压 → 运行 `PDFOCRTarget`（Linux/macOS 需 `chmod +x PDFOCRTarget`）
 
             ### 下载
             | 平台 | 依赖框架 | Self-Contained |
             |------|----------|----------------|
-            | Windows x64 | `PDFOCRTarget-win-x64.exe` | `PDFOCRTarget-win-x64-Self-Contain.exe` |
-            | Linux x64 | `PDFOCRTarget-linux-x64` | `PDFOCRTarget-linux-x64-Self-Contain` |
-            | macOS ARM64 | `PDFOCRTarget-osx-arm64` | `PDFOCRTarget-osx-arm64-Self-Contain` |
+            | Windows x64 | `PDFOCRTarget-win-x64.zip` | `PDFOCRTarget-win-x64-Self-Contain.zip` |
+            | Linux x64 | `PDFOCRTarget-linux-x64.zip` | `PDFOCRTarget-linux-x64-Self-Contain.zip` |
+            | macOS ARM64 | `PDFOCRTarget-osx-arm64.zip` | `PDFOCRTarget-osx-arm64-Self-Contain.zip` |
           files: |
-            artifacts/PDFOCRTarget-win-x64-Self-Contain.exe/PDFOCRTarget-win-x64-Self-Contain.exe
-            artifacts/PDFOCRTarget-win-x64.exe/PDFOCRTarget-win-x64.exe
-            artifacts/PDFOCRTarget-linux-x64-Self-Contain/PDFOCRTarget-linux-x64-Self-Contain
-            artifacts/PDFOCRTarget-linux-x64/PDFOCRTarget-linux-x64
-            artifacts/PDFOCRTarget-osx-arm64-Self-Contain/PDFOCRTarget-osx-arm64-Self-Contain
-            artifacts/PDFOCRTarget-osx-arm64/PDFOCRTarget-osx-arm64
+            artifacts/PDFOCRTarget-win-x64-Self-Contain/PDFOCRTarget-win-x64-Self-Contain.zip
+            artifacts/PDFOCRTarget-win-x64/PDFOCRTarget-win-x64.zip
+            artifacts/PDFOCRTarget-linux-x64-Self-Contain/PDFOCRTarget-linux-x64-Self-Contain.zip
+            artifacts/PDFOCRTarget-linux-x64/PDFOCRTarget-linux-x64.zip
+            artifacts/PDFOCRTarget-osx-arm64-Self-Contain/PDFOCRTarget-osx-arm64-Self-Contain.zip
+            artifacts/PDFOCRTarget-osx-arm64/PDFOCRTarget-osx-arm64.zip
           draft: false
           prerelease: false
