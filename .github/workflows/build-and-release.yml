@@ -13,17 +13,31 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Self-Contained 版本（不需要安装 .NET 运行时）
           - os: windows-latest
             rid: win-x64
-            ext: .exe
+            self_contained: true
+            asset_name: PDFOCRTarget-win-x64-Self-Contain.exe
+          - os: ubuntu-latest
+            rid: linux-x64
+            self_contained: true
+            asset_name: PDFOCRTarget-linux-x64-Self-Contain
+          - os: macos-latest
+            rid: osx-arm64
+            self_contained: true
+            asset_name: PDFOCRTarget-osx-arm64-Self-Contain
+          # 依赖框架版本（需要安装 .NET 9 运行时，体积更小）
+          - os: windows-latest
+            rid: win-x64
+            self_contained: false
             asset_name: PDFOCRTarget-win-x64.exe
           - os: ubuntu-latest
             rid: linux-x64
-            ext: ''
+            self_contained: false
             asset_name: PDFOCRTarget-linux-x64
           - os: macos-latest
             rid: osx-arm64
-            ext: ''
+            self_contained: false
             asset_name: PDFOCRTarget-osx-arm64
 
     steps:
@@ -36,27 +50,26 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Publish
-        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained true -o ./publish
+        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained ${{ matrix.self_contained }} -o ./publish-${{ matrix.asset_name }}
 
       - name: Find and rename binary
         shell: bash
         run: |
           if [ "${{ matrix.rid }}" = "win-x64" ]; then
-            # Windows: find the exe
-            if [ -f "publish/PDFOCRTarget.exe" ]; then
-              cp "publish/PDFOCRTarget.exe" "${{ matrix.asset_name }}"
+            if [ -f "publish-${{ matrix.asset_name }}/PDFOCRTarget.exe" ]; then
+              cp "publish-${{ matrix.asset_name }}/PDFOCRTarget.exe" "${{ matrix.asset_name }}"
             else
               echo "ERROR: PDFOCRTarget.exe not found"
-              ls -la publish/
+              ls -la "publish-${{ matrix.asset_name }}/"
               exit 1
             fi
           else
-            if [ -f "publish/PDFOCRTarget" ]; then
-              cp "publish/PDFOCRTarget" "${{ matrix.asset_name }}"
+            if [ -f "publish-${{ matrix.asset_name }}/PDFOCRTarget" ]; then
+              cp "publish-${{ matrix.asset_name }}/PDFOCRTarget" "${{ matrix.asset_name }}"
               chmod +x "${{ matrix.asset_name }}"
             else
               echo "ERROR: PDFOCRTarget binary not found"
-              ls -la publish/
+              ls -la "publish-${{ matrix.asset_name }}/"
               exit 1
             fi
           fi
@@ -90,32 +103,40 @@ jobs:
           name: PDFOCRTarget ${{ github.ref_name }}
           body: |
             ## PDFOCRTarget ${{ github.ref_name }}
-            
+
             全平台 PDF 图片转文字 OCR 识别转换工具
-            
+
             ### 功能
             - OCR 文字识别（图片/扫描版 PDF）
             - PDF 照片转可搜索 PDF 文本
             - 关键词搜索（支持 PDF/图片）
             - 自定义玻璃模糊背景
-            
+
             ### 环境要求
             - Windows / Linux / macOS
             - Python 3.8+（需安装 `rapidocr_onnxruntime` 和 `PyMuPDF`）
-            
+
             ### 安装 Python 依赖
             ```bash
             pip install rapidocr_onnxruntime PyMuPDF
             ```
-            
+
+            ### 版本说明
+            - **Self-Contain** — 独立版本，无需安装 .NET 运行时，体积较大（~80MB）
+            - **无后缀** — 依赖框架版本，需先安装 [.NET 9 运行时](https://dotnet.microsoft.com/download/dotnet/9.0)，体积较小（~1MB）
+
             ### 下载
-            请根据您的系统下载对应版本：
-            - `win-x64` — Windows 64位
-            - `linux-x64` — Linux 64位
-            - `osx-arm64` — macOS Apple Silicon
+            | 平台 | 依赖框架 | Self-Contained |
+            |------|----------|----------------|
+            | Windows x64 | `PDFOCRTarget-win-x64.exe` | `PDFOCRTarget-win-x64-Self-Contain.exe` |
+            | Linux x64 | `PDFOCRTarget-linux-x64` | `PDFOCRTarget-linux-x64-Self-Contain` |
+            | macOS ARM64 | `PDFOCRTarget-osx-arm64` | `PDFOCRTarget-osx-arm64-Self-Contain` |
           files: |
+            artifacts/PDFOCRTarget-win-x64-Self-Contain.exe/PDFOCRTarget-win-x64-Self-Contain.exe
             artifacts/PDFOCRTarget-win-x64.exe/PDFOCRTarget-win-x64.exe
+            artifacts/PDFOCRTarget-linux-x64-Self-Contain/PDFOCRTarget-linux-x64-Self-Contain
             artifacts/PDFOCRTarget-linux-x64/PDFOCRTarget-linux-x64
+            artifacts/PDFOCRTarget-osx-arm64-Self-Contain/PDFOCRTarget-osx-arm64-Self-Contain
             artifacts/PDFOCRTarget-osx-arm64/PDFOCRTarget-osx-arm64
           draft: false
           prerelease: false
