@@ -10,6 +10,7 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
@@ -34,23 +35,30 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Restore
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build -c Release --no-restore
-
       - name: Publish
         run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained true -o ./publish
 
-      - name: Rename binary
+      - name: Find and rename binary
         shell: bash
         run: |
-          cd publish
           if [ "${{ matrix.rid }}" = "win-x64" ]; then
-            mv PDFOCRTarget.exe ../${{ matrix.asset_name }}
+            # Windows: find the exe
+            if [ -f "publish/PDFOCRTarget.exe" ]; then
+              cp "publish/PDFOCRTarget.exe" "${{ matrix.asset_name }}"
+            else
+              echo "ERROR: PDFOCRTarget.exe not found"
+              ls -la publish/
+              exit 1
+            fi
           else
-            mv PDFOCRTarget ../${{ matrix.asset_name }}
+            if [ -f "publish/PDFOCRTarget" ]; then
+              cp "publish/PDFOCRTarget" "${{ matrix.asset_name }}"
+              chmod +x "${{ matrix.asset_name }}"
+            else
+              echo "ERROR: PDFOCRTarget binary not found"
+              ls -la publish/
+              exit 1
+            fi
           fi
 
       - name: Upload artifact
@@ -71,6 +79,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f | head -20
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -103,7 +114,7 @@ jobs:
             - `linux-x64` — Linux 64位
             - `osx-arm64` — macOS Apple Silicon
           files: |
-            artifacts/PDFOCRTarget-win-x64/PDFOCRTarget-win-x64.exe
+            artifacts/PDFOCRTarget-win-x64.exe/PDFOCRTarget-win-x64.exe
             artifacts/PDFOCRTarget-linux-x64/PDFOCRTarget-linux-x64
             artifacts/PDFOCRTarget-osx-arm64/PDFOCRTarget-osx-arm64
           draft: false
